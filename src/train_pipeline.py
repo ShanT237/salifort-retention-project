@@ -4,7 +4,7 @@ import time
 from preprocessing import preprocess_pipeline
 from modeling import (
     prepare_splits, train_logistic_regression, tune_decision_tree,
-    tune_random_forest, evaluate_model, save_model
+    tune_random_forest, evaluate_model, save_model, plot_roc_curves
 )
 
 def run_pipeline():
@@ -74,6 +74,16 @@ def run_pipeline():
     # Also save the scaler and other models in case they are needed for deployment
     save_model(log_model, 'notebooks/models/hr_lr_baseline.pickle')
     save_model(scaler, 'notebooks/models/scaler.pickle')
+    
+    # 8. Generate and save ROC comparison curves
+    print("\n--- Generating ROC Curves Comparison Plot ---")
+    models_dict = {
+        'Logistic Regression (Baseline)': {'probs': log_probs, 'color': '#1f77b4'},
+        'Logistic Regression (Balanced)': {'probs': log_probs_bal, 'color': '#aec7e8'},
+        'Decision Tree (Tuned)': {'probs': dt_probs, 'color': '#ff7f0e'},
+        'Random Forest (Tuned)': {'probs': rf_probs, 'color': '#2ca02c'}
+    }
+    plot_roc_curves(models_dict, X_test, y_test, 'reports/figures/roc_comparison.png')
     
     print("\n=== PIPELINE COMPLETED SUCCESSFULLY ===")
 

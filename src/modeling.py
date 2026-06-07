@@ -123,3 +123,44 @@ def load_model(file_path: str):
     """
     with open(file_path, 'rb') as f:
         return pickle.load(f)
+
+def plot_roc_curves(models_dict, X_test, y_test, save_path: str):
+    """
+    Plots ROC curves for multiple models on a single plot and saves the figure.
+    models_dict is expected to be a dictionary:
+    {
+        'Model Name': {
+            'probs': array_of_probabilities_for_class_1,
+            'color': 'color_code'
+        }
+    }
+    """
+    import matplotlib.pyplot as plt
+    from sklearn.metrics import roc_curve, auc
+    import os
+
+    plt.figure(figsize=(8, 6))
+    
+    for name, info in models_dict.items():
+        probs = info['probs']
+        color = info.get('color', None)
+        fpr, tpr, _ = roc_curve(y_test, probs)
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, color=color, lw=2, label=f'{name} (AUC = {roc_auc:.4f})')
+        
+    plt.plot([0, 1], [0, 1], color='gray', lw=1, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate (FPR)')
+    plt.ylabel('True Positive Rate (TPR)')
+    plt.title('Receiver Operating Characteristic (ROC) Curves')
+    plt.legend(loc="lower right")
+    plt.grid(True, linestyle=':', alpha=0.6)
+    
+    dir_name = os.path.dirname(save_path)
+    if dir_name:
+        os.makedirs(dir_name, exist_ok=True)
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"[Modeling] ROC curves saved to {save_path}")
+
