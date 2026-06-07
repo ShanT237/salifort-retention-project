@@ -7,26 +7,26 @@ import sys
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Configuración de página
+# Page configuration
 st.set_page_config(
-    page_title="Predicción de Rotación de Empleados | Salifort Motors",
+    page_title="Employee Churn Prediction | Salifort Motors",
     page_icon="🚗",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Agregar la carpeta src/ al path para cargar módulos locales
+# Add src/ directory to system path to import local preprocessing
 sys.path.append(os.path.abspath('src'))
 from preprocessing import clean_data
 
-# CSS para estilo Premium
+# Premium custom styling
 st.markdown("""
 <style>
-    /* Estilo del contenedor principal */
+    /* Main container background */
     .reportview-container {
         background-color: #f8f9fa;
     }
-    /* Tarjetas de métricas y resultados */
+    /* Metric and result card container */
     .metric-card {
         background-color: #ffffff;
         border-radius: 12px;
@@ -35,13 +35,13 @@ st.markdown("""
         border: 1px solid #e9ecef;
         margin-bottom: 20px;
     }
-    /* Estilos de botones y selectores */
+    /* Button and selector styling custom tweaks */
     .stButton>button {
         background-color: #0d6efd;
         color: white;
         border-radius: 8px;
     }
-    /* Títulos e iconos */
+    /* Typography settings */
     .app-title {
         font-family: 'Outfit', 'Inter', sans-serif;
         font-weight: 800;
@@ -56,7 +56,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Cargar recursos (modelo y datos para comparación)
+# Load resources (model and comparison stats)
 @st.cache_resource
 def load_resources():
     model_path = 'notebooks/models/hr_rf1.pickle'
@@ -73,88 +73,87 @@ def load_resources():
 try:
     model, df_clean = load_resources()
 except Exception as e:
-    st.error(f"Error al cargar el modelo o los datos. Asegúrate de haber ejecutado el pipeline de entrenamiento primero. Detalle: {e}")
+    st.error(f"Error loading resources. Ensure you have run the training pipeline first. Detail: {e}")
     st.stop()
 
-# Estructura de la aplicación
+# Main page headers
 st.markdown('<h1 class="app-title">🚗 Salifort Motors — Churn Analytics</h1>', unsafe_allow_html=True)
-st.markdown('<p class="app-subtitle">Plataforma interactiva para la predicción de riesgo de fuga de talento en tiempo real</p>', unsafe_allow_html=True)
+st.markdown('<p class="app-subtitle">Interactive platform for real-time employee retention and risk prediction</p>', unsafe_allow_html=True)
 
-# Sidebar para ingresar los datos del empleado
-st.sidebar.markdown("### 📋 Datos del Empleado")
-st.sidebar.markdown("Ingrese las características del empleado para evaluar su probabilidad de permanencia.")
+# Sidebar inputs
+st.sidebar.markdown("### 📋 Employee Profile")
+st.sidebar.markdown("Input the employee's characteristics below to evaluate their retention risk.")
 
-# Inputs del usuario en el sidebar
 satisfaction_level = st.sidebar.slider(
-    "Nivel de Satisfacción",
+    "Satisfaction Level",
     min_value=0.0,
     max_value=1.0,
     value=0.5,
     step=0.01,
-    help="Nivel de satisfacción reportado por el empleado (0 a 1)"
+    help="Employee's self-reported satisfaction level (0.0 to 1.0)"
 )
 
 last_evaluation = st.sidebar.slider(
-    "Última Evaluación",
+    "Last Evaluation",
     min_value=0.0,
     max_value=1.0,
     value=0.7,
     step=0.01,
-    help="Calificación obtenida por el empleado en su última evaluación (0 a 1)"
+    help="Employee's score in their last performance evaluation (0.0 to 1.0)"
 )
 
 number_project = st.sidebar.number_input(
-    "Número de Proyectos",
+    "Number of Projects",
     min_value=2,
     max_value=7,
     value=3,
     step=1,
-    help="Número de proyectos asignados actualmente"
+    help="Number of active projects currently assigned"
 )
 
 average_monthly_hours = st.sidebar.slider(
-    "Horas Mensuales Promedio",
+    "Average Monthly Hours",
     min_value=96,
     max_value=310,
     value=180,
     step=1,
-    help="Horas de trabajo promedio al mes"
+    help="Average hours worked per month"
 )
 
 tenure = st.sidebar.slider(
-    "Antigüedad en la Empresa (Años)",
+    "Tenure (Years)",
     min_value=2,
     max_value=10,
     value=3,
     step=1,
-    help="Años transcurridos desde el ingreso a la empresa"
+    help="Years spent at the company"
 )
 
 work_accident = st.sidebar.selectbox(
-    "¿Ha tenido algún accidente laboral?",
-    options=[("No", 0), ("Sí", 1)],
+    "Work Accident History?",
+    options=[("No", 0), ("Yes", 1)],
     format_func=lambda x: x[0]
 )[1]
 
 promotion_last_5years = st.sidebar.selectbox(
-    "¿Ha sido ascendido en los últimos 5 años?",
-    options=[("No", 0), ("Sí", 1)],
+    "Promoted in the Last 5 Years?",
+    options=[("No", 0), ("Yes", 1)],
     format_func=lambda x: x[0]
 )[1]
 
 salary = st.sidebar.selectbox(
-    "Nivel de Salario",
+    "Salary Level",
     options=["low", "medium", "high"],
-    format_func=lambda x: "Bajo (low)" if x == "low" else "Medio (medium)" if x == "medium" else "Alto (high)"
+    format_func=lambda x: "Low (low)" if x == "low" else "Medium (medium)" if x == "medium" else "High (high)"
 )
 
 department = st.sidebar.selectbox(
-    "Departamento",
+    "Department",
     options=["IT", "RandD", "accounting", "hr", "management", "marketing", "product_mng", "sales", "support", "technical"],
     format_func=lambda x: x.upper() if x == "IT" else x.capitalize()
 )
 
-# Procesar inputs para el modelo
+# Align input data with model expected feature format
 feature_names = [
     'satisfaction_level', 'last_evaluation', 'number_project', 'average_monthly_hours',
     'tenure', 'work_accident', 'promotion_last_5years', 'salary',
@@ -182,98 +181,96 @@ for dept in ['RandD', 'accounting', 'hr', 'management', 'marketing', 'product_mn
 
 input_df = pd.DataFrame([input_dict], columns=feature_names)
 
-# Realizar Predicción
+# Model inference
 prob_leaving = model.predict_proba(input_df)[0, 1]
-prob_retaining = 1 - prob_leaving
 
-# Definir nivel de riesgo
+# Risk logic mapping
 if prob_leaving >= 0.7:
-    risk_level = "Alto"
-    risk_color = "#dc3545"  # Rojo
+    risk_level = "High"
+    risk_color = "#dc3545"  # Red
     risk_icon = "🔴"
-    risk_text = "Este empleado presenta un alto riesgo de abandonar la empresa voluntariamente en el corto plazo. Se sugiere tomar medidas de retención inmediatas."
+    risk_text = "This employee presents a high risk of voluntarily leaving the company soon. Immediate retention actions are strongly recommended."
 elif prob_leaving >= 0.3:
-    risk_level = "Medio"
-    risk_color = "#ffc107"  # Amarillo/Naranja
+    risk_level = "Medium"
+    risk_color = "#ffc107"  # Yellow/Amber
     risk_icon = "🟡"
-    risk_text = "Riesgo moderado de abandono. Monitorear su nivel de carga de trabajo y satisfacción en las próximas semanas."
+    risk_text = "Moderate risk of churn. Consider reviewing their workload and satisfaction level in upcoming 1-on-1s."
 else:
-    risk_level = "Bajo"
-    risk_color = "#198754"  # Verde
+    risk_level = "Low"
+    risk_color = "#198754"  # Green
     risk_icon = "🟢"
-    risk_text = "Bajo riesgo de abandono. El perfil del empleado coincide con patrones de retención estables."
+    risk_text = "Low risk of churn. The profile matches historically stable retention patterns."
 
-# Diseño del layout principal
+# Display outputs
 col1, col2 = st.columns([1.1, 1.0])
 
 with col1:
     st.markdown(f'<div class="metric-card">', unsafe_allow_html=True)
-    st.subheader("📊 Análisis de Riesgo de Churn")
+    st.subheader("📊 Churn Risk Assessment")
     
-    # Mostrar resultados
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown(f"#### Probabilidad de Fuga")
+        st.markdown(f"#### Churn Probability")
         st.markdown(f"<h1 style='color:{risk_color}; font-size: 4rem; margin-top: -10px; margin-bottom: 0px;'>{prob_leaving * 100:.1f}%</h1>", unsafe_allow_html=True)
     with c2:
-        st.markdown(f"#### Nivel de Riesgo")
+        st.markdown(f"#### Risk Category")
         st.markdown(f"<h1 style='color:{risk_color}; font-size: 2.2rem; margin-top: 5px; margin-bottom: 0px;'>{risk_icon} {risk_level}</h1>", unsafe_allow_html=True)
     
     st.markdown(f"<p style='margin-top: 15px; font-size: 1.05rem;'>{risk_text}</p>", unsafe_allow_html=True)
     
-    # Barra de progreso customizada
-    st.markdown("<p style='margin-bottom: 5px; font-weight: bold;'>Termómetro de Riesgo</p>", unsafe_allow_html=True)
+    # Progress gauge
+    st.markdown("<p style='margin-bottom: 5px; font-weight: bold;'>Risk Thermometer</p>", unsafe_allow_html=True)
     st.progress(prob_leaving)
     st.markdown(f"</div>", unsafe_allow_html=True)
     
-    # Factores de Riesgo / Recomendaciones Dinámicas
+    # Dynamic text recommendations
     st.markdown(f'<div class="metric-card">', unsafe_allow_html=True)
-    st.subheader("💡 Factores y Recomendaciones Dinámicas")
+    st.subheader("💡 Key Risk Factors & Recommendations")
     
     factors = []
     
-    # Burnout cluster check
+    # Burnout cluster
     if satisfaction_level <= 0.11 and average_monthly_hours >= 240 and number_project >= 6:
         factors.append((
-            "⚠️ **Síndrome de Burnout Extremo Detectado**",
-            "El empleado tiene un nivel de satisfacción críticamente bajo y trabaja más de 240 horas mensuales con 6 o más proyectos. Este perfil coincide perfectamente con el principal clúster histórico de abandono voluntario.",
-            "**Acción recomendada**: Reducir su asignación de proyectos a un máximo de 5 y limitar sus horas mensuales por debajo de las 200 horas de forma obligatoria."
+            "⚠️ **Extreme Burnout Syndrome Detected**",
+            "The employee has critically low satisfaction, works over 240 hours monthly, and handles 6 or more projects. This aligns exactly with the main historical churn cluster (burnout).",
+            "**Recommended Action**: Limit active projects to a maximum of 5 and cap monthly hours below 200 immediately."
         ))
     
-    # High evaluation / Low salary check
+    # High evaluation vs low salary
     if last_evaluation >= 0.8 and salary == "low":
         factors.append((
-            "💸 **Alto Rendimiento vs. Compensación Baja**",
-            "El empleado tiene una evaluación sobresaliente pero percibe un salario bajo. Históricamente, este desbalance produce un fuerte sentimiento de descontento o aumenta la probabilidad de ser contratado por competidores.",
-            "**Acción recomendada**: Evaluar un ajuste salarial a nivel 'medio' u ofrecer bonos de desempeño en el corto plazo."
+            "💸 **High Performance vs. Low Salary**",
+            "The employee has an outstanding evaluation score but is on a low salary. Historically, this mismatch creates dissatisfaction and high susceptibility to competitors' offers.",
+            "**Recommended Action**: Review salary benchmark and consider a salary increase to 'medium' or offer performance bonuses."
         ))
         
-    # Tenure risk check
+    # Tenure critical range
     if tenure in [3, 4, 5]:
         factors.append((
-            "⏳ **Antigüedad en Periodo Crítico (Año 3 a 5)**",
-            f"El empleado se encuentra en su año {tenure} en la empresa. La tasa de abandono en Salifort Motors se concentra fuertemente entre los años 3 y 5 de antigüedad, coincidiendo con la caída de satisfacción laboral.",
-            "**Acción recomendada**: Programar una sesión de coaching o revisión de plan de carrera para ofrecer nuevas metas dentro del departamento."
+            "⏳ **Critical Tenure Window (Years 3-5)**",
+            f"The employee is in year {tenure} at the company. Historical turnover at Salifort Motors is heavily clustered in years 3 through 5, corresponding with drops in satisfaction.",
+            "**Recommended Action**: Schedule a career development talk to set new professional milestones."
         ))
         
-    # Underutilization check
+    # Underutilization
     if number_project <= 2 and satisfaction_level <= 0.4:
         factors.append((
-            "📉 **Riesgo de Desconexión / Aburrimiento**",
-            f"El empleado tiene solo {number_project} proyectos y satisfacción menor a 0.4. Esto suele indicar subutilización del talento, lo que produce aburrimiento o desinterés.",
-            "**Acción recomendada**: Asignarle al menos un proyecto adicional que represente un reto profesional para reactivar su motivación."
+            "📉 **Risk of Disengagement / Underutilization**",
+            f"The employee has only {number_project} projects and satisfaction below 0.4. This indicates potential underutilization, which can cause lack of motivation.",
+            "**Recommended Action**: Assign at least one additional challenging project to reactivate their professional interest."
         ))
         
-    # Accident and Churn correlation
+    # Work accident correlation
     if work_accident == 1:
         factors.append((
-            "🏥 **Historial de Accidente Laboral**",
-            "El empleado ha sufrido un accidente laboral en el pasado. Aunque los accidentes tienen una correlación negativa global con la rotación (los que tienen accidentes tienden a irse menos, posiblemente por mayor protección legal o estabilidad), requiere monitoreo de su salud ocupacional.",
-            "**Acción recomendada**: Asegurar seguimiento médico adecuado y evaluar si la seguridad laboral influye en su estado emocional."
+            "🏥 **Work Accident History**",
+            "The employee has suffered a work accident in the past. Although accidents show a slight negative correlation with churn globally (possibly due to legal protections or stability incentives), it warrants occupational health monitoring.",
+            "**Recommended Action**: Ensure proper follow-up and verify if workplace safety affects their well-being."
         ))
         
     if not factors:
-        st.write("✅ No se han detectado combinaciones de riesgo extremas. Mantenga el monitoreo regular.")
+        st.write("✅ No extreme risk factors detected. Maintain standard check-ins.")
     else:
         for title, desc, action in factors:
             st.markdown(f"**{title}**")
@@ -284,27 +281,25 @@ with col1:
     st.markdown(f"</div>", unsafe_allow_html=True)
 
 with col2:
-    # Comparativa vs Promedios Históricos
+    # Averages table
     st.markdown(f'<div class="metric-card">', unsafe_allow_html=True)
-    st.subheader("🔄 Comparación vs. Promedios Históricos")
+    st.subheader("🔄 Comparison vs. Historical Averages")
     
-    # Calcular promedios del dataset limpio
     avg_stayed = df_clean[df_clean['left'] == 0].mean(numeric_only=True)
     avg_left = df_clean[df_clean['left'] == 1].mean(numeric_only=True)
     
-    # Preparar DataFrame de comparación
     comparison_data = {
-        "Métrica": [
-            "Nivel de Satisfacción",
-            "Última Evaluación",
-            "Número de Proyectos",
-            "Horas Mensuales Promedio",
-            "Antigüedad (Años)",
-            "Accidente Laboral (%)",
-            "Ascendido últ. 5 años (%)",
-            "Salario Mapeado (0-2)"
+        "Metric": [
+            "Satisfaction Level",
+            "Last Evaluation",
+            "Number of Projects",
+            "Average Monthly Hours",
+            "Tenure (Years)",
+            "Work Accident (%)",
+            "Promoted Last 5 Years (%)",
+            "Salary Level Mapped (0-2)"
         ],
-        "Empleado Actual": [
+        "Current Employee": [
             satisfaction_level,
             last_evaluation,
             number_project,
@@ -314,7 +309,7 @@ with col2:
             promotion_last_5years * 100.0,
             salary_val
         ],
-        "Promedio (Se Quedaron)": [
+        "Average (Stayed)": [
             avg_stayed['satisfaction_level'],
             avg_stayed['last_evaluation'],
             avg_stayed['number_project'],
@@ -324,7 +319,7 @@ with col2:
             avg_stayed['promotion_last_5years'] * 100.0,
             avg_stayed['salary']
         ],
-        "Promedio (Se Fueron)": [
+        "Average (Left)": [
             avg_left['satisfaction_level'],
             avg_left['last_evaluation'],
             avg_left['number_project'],
@@ -338,41 +333,36 @@ with col2:
     
     df_comp = pd.DataFrame(comparison_data)
     
-    # Formatear valores
+    # Formatting
     df_comp_formatted = df_comp.copy()
-    for col in ["Empleado Actual", "Promedio (Se Quedaron)", "Promedio (Se Fueron)"]:
+    for col in ["Current Employee", "Average (Stayed)", "Average (Left)"]:
         df_comp_formatted[col] = df_comp_formatted[col].apply(lambda x: f"{x:.2f}" if abs(x) > 5 else f"{x:.4f}" if x < 1 else f"{x:.2f}")
         
-    st.table(df_comp_formatted.set_index("Métrica"))
+    st.table(df_comp_formatted.set_index("Metric"))
     st.markdown(f"</div>", unsafe_allow_html=True)
     
-    # Importancias de las características en el modelo
+    # Feature importances
     st.markdown(f'<div class="metric-card">', unsafe_allow_html=True)
-    st.subheader("🎯 Importancia Global de Variables (Modelo RF)")
+    st.subheader("🎯 Global Feature Importances (RF Model)")
     
-    # Obtener feature importances del modelo
     importances = model.feature_importances_
-    # Para simplificar la visualización, agrupamos las dummies de department
-    # y mostramos el top de variables
-    # El orden de las features es el que tenemos en feature_names
-    feat_imp = pd.DataFrame({
-        'Variable': [f.replace('department_', 'Depto: ').replace('satisfaction_level', 'Satisfacción').replace('last_evaluation', 'Evaluación').replace('number_project', 'Nº Proyectos').replace('average_monthly_hours', 'Horas Mensuales').replace('tenure', 'Antigüedad').replace('work_accident', 'Accidente Laboral').replace('promotion_last_5years', 'Ascendido 5a').replace('salary', 'Salario') for f in feature_names],
-        'Importancia': importances
-    }).sort_values('Importancia', ascending=True)
     
-    # Gráfico seaborn/matplotlib
+    feat_imp = pd.DataFrame({
+        'Feature': [f.replace('department_', 'Dept: ').replace('satisfaction_level', 'Satisfaction').replace('last_evaluation', 'Evaluation').replace('number_project', 'No. Projects').replace('average_monthly_hours', 'Monthly Hours').replace('tenure', 'Tenure').replace('work_accident', 'Work Accident').replace('promotion_last_5years', 'Promoted 5y').replace('salary', 'Salary') for f in feature_names],
+        'Importance': importances
+    }).sort_values('Importance', ascending=True)
+    
     fig, ax = plt.subplots(figsize=(8, 6.5))
-    # Seleccionar top 8 para claridad
     sns.barplot(
         data=feat_imp.tail(8),
-        x='Importancia',
-        y='Variable',
+        x='Importance',
+        y='Feature',
         palette='viridis',
         ax=ax
     )
-    ax.set_xlabel('Importancia Relativa')
-    ax.set_ylabel('Variable')
-    ax.set_title('Top 8 Predictores Más Influyentes')
+    ax.set_xlabel('Relative Importance')
+    ax.set_ylabel('Feature')
+    ax.set_title('Top 8 Most Influential Predictors')
     plt.tight_layout()
     st.pyplot(fig)
     
