@@ -4,6 +4,23 @@ This project builds an end-to-end data science solution to predict employee attr
 
 ---
 
+## 🖥️ Interactive Dashboard Preview
+
+An interactive Streamlit web application was built so any HR analyst can evaluate an employee's churn risk in real time — no code required. The sidebar accepts the employee's profile (satisfaction, hours, tenure, salary, etc.) and instantly returns:
+
+- **Churn probability (%)** with a risk thermometer
+- **Risk category** — High 🔴 / Medium 🟡 / Low 🟢 with a tailored recommendation
+- **Dynamic risk factor cards** (burnout detection, critical tenure window, pay gap alerts)
+- **Historical comparison table** — employee vs. average of those who stayed / left
+- **Feature importance chart** — top 8 predictors driving the model's decision
+- **ROC curves** for all 4 model variants side-by-side
+
+![Salifort Churn Analytics Dashboard](reports/figures/dashboard_preview.png)
+
+> Run locally with: `streamlit run app/main.py`
+
+---
+
 ## 🎯 Business Goal
 
 Employee turnover (attrition) is extremely costly, leading to recruitment costs, lost productivity, and diminished team morale. The goals of this project are:
@@ -34,7 +51,8 @@ Employee turnover (attrition) is extremely costly, leading to recruitment costs,
 │   └── test_modeling.py            # Tests for evaluate_model, prepare_splits, save/load
 ├── reports/
 │   └── figures/
-│       └── roc_comparison.png      # Comparative ROC curves for all 4 models
+│       ├── roc_comparison.png      # Comparative ROC curves for all 4 models
+│       └── dashboard_preview.png   # Screenshot of the Streamlit dashboard
 └── app/
     └── main.py                     # Interactive Streamlit dashboard for HR teams
 ```
