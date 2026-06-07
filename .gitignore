@@ -1,4 +1,38 @@
+# Python bytecode & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual environments
 venv/
+.venv
+env/
+.env
+
+# Jupyter Notebooks
 .ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Data directories (keep directory structure but ignore data files)
 data/raw/
 data/processed/
+
+# Model binaries (serialize to models/ but do not commit large files to git)
+*.pickle
+models/
+notebooks/models/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE configurations
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
